@@ -39,8 +39,10 @@ class EcoNewsAggregator:
 
     def analyze_topics(self, text):
         tokens = word_tokenize(text)
-        tokens = [token for token in tokens if token.lower() not in stopwords.words('english')]
-        tokens = [token.lower() for token in tokens if re.match('[a-zA-Z]+', token)]
+        tokens = [token for token in tokens if token.lower()
+                  not in stopwords.words('english')]
+        tokens = [token.lower()
+                  for token in tokens if re.match('[a-zA-Z]+', token)]
         lemmatizer = WordNetLemmatizer()
         tokens = [lemmatizer.lemmatize(token) for token in tokens]
         tags = pos_tag(tokens)
@@ -51,7 +53,8 @@ class EcoNewsAggregator:
         lda.fit(X)
         topics = []
         for idx, topic in enumerate(lda.components_):
-            words = vectorizer.get_feature_names_out()[topic.argsort()[-3:]][::-1]
+            words = vectorizer.get_feature_names_out()[
+                topic.argsort()[-3:]][::-1]
             topics.append({'topic': f'Topic {idx}', 'keywords': words})
         return topics
 
@@ -89,7 +92,8 @@ class EcoNewsAggregator:
 
     def run(self):
         # Scrape articles from trusted sources
-        self.scrape_articles("https://www.trustedsources.com/environmental-news")
+        self.scrape_articles(
+            "https://www.trustedsources.com/environmental-news")
 
         # Analyze sentiment, topics, etc. for each article
         for article in self.articles:
@@ -112,7 +116,8 @@ class EcoNewsAggregator:
 
         # Translate articles to user's preferred language
         for article in prioritized_articles:
-            article['translation'] = self.translate_article(article['content'], 'fr')
+            article['translation'] = self.translate_article(
+                article['content'], 'fr')
 
         # Share articles on Twitter
         for article in prioritized_articles:
