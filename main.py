@@ -1,20 +1,21 @@
-import requests
-from bs4 import BeautifulSoup
-import nltk
-from nltk.sentiment import SentimentIntensityAnalyzer
-from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
-from nltk.probability import FreqDist
-from nltk.stem import WordNetLemmatizer
-from nltk import pos_tag
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.decomposition import LatentDirichletAllocation
-import matplotlib.pyplot as plt
-import pandas as pd
-import re
-import googletrans
-from googletrans import Translator
 import tweepy
+from googletrans import Translator
+import googletrans
+import re
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.decomposition import LatentDirichletAllocation
+from sklearn.feature_extraction.text import CountVectorizer
+from nltk import pos_tag
+from nltk.stem import WordNetLemmatizer
+from nltk.probability import FreqDist
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.sentiment import SentimentIntensityAnalyzer
+import nltk
+from bs4 import BeautifulSoup
+import requests
+Optimized Python script:
 
 
 class EcoNewsAggregator:
@@ -22,6 +23,10 @@ class EcoNewsAggregator:
         self.articles = []
         self.preferences = []
         self.translator = Translator()
+        self.sia = SentimentIntensityAnalyzer()
+        self.vectorizer = CountVectorizer(max_features=10)
+        self.lda = LatentDirichletAllocation(n_components=5)
+        self.lemmatizer = WordNetLemmatizer()
 
     def scrape_articles(self, url):
         response = requests.get(url)
@@ -33,8 +38,7 @@ class EcoNewsAggregator:
             self.articles.append({'title': title, 'content': content})
 
     def analyze_sentiment(self, text):
-        sia = SentimentIntensityAnalyzer()
-        sentiment = sia.polarity_scores(text)
+        sentiment = self.sia.polarity_scores(text)
         return sentiment
 
     def analyze_topics(self, text):
@@ -43,17 +47,14 @@ class EcoNewsAggregator:
                   not in stopwords.words('english')]
         tokens = [token.lower()
                   for token in tokens if re.match('[a-zA-Z]+', token)]
-        lemmatizer = WordNetLemmatizer()
-        tokens = [lemmatizer.lemmatize(token) for token in tokens]
+        tokens = [self.lemmatizer.lemmatize(token) for token in tokens]
         tags = pos_tag(tokens)
         nouns = [tag[0] for tag in tags if 'NN' in tag[1]]
-        vectorizer = CountVectorizer(max_features=10)
-        X = vectorizer.fit_transform(nouns)
-        lda = LatentDirichletAllocation(n_components=5)
-        lda.fit(X)
+        X = self.vectorizer.fit_transform(nouns)
+        self.lda.fit(X)
         topics = []
-        for idx, topic in enumerate(lda.components_):
-            words = vectorizer.get_feature_names_out()[
+        for idx, topic in enumerate(self.lda.components_):
+            words = self.vectorizer.get_feature_names_out()[
                 topic.argsort()[-3:]][::-1]
             topics.append({'topic': f'Topic {idx}', 'keywords': words})
         return topics
